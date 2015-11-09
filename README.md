@@ -1,3 +1,5 @@
+The py-OTP project is now RealTime-OTP
+
 # RealTime-OTP
 RealTime-OTP is a re-implementation of Disney's OTP server, targeted for multiplayer games, and written in c/c++.
 RealTime-OTP is open-source and is free to use.
