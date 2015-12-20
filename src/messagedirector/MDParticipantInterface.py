@@ -11,6 +11,7 @@ class MDParticipantInterface:
 			if self.registeredParticipants[channel] == connection:
 				for potentials in self.potentialParticipants:
 					if potentials == connection:
+						self.potentialParticipants.remove(connection)
 						return True
 		else:
 			return False
