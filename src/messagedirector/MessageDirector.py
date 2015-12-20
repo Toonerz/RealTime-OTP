@@ -69,26 +69,26 @@ class MessageDirector(QueuedConnectionManager):
         messageType = di.getUint16()
         
         if messageType == CONTROL_MESSAGE:
-			return NotImplemented
-		elif messageType == CONTROL_SET_CHANNEL:
-			self.interface.register_channel(self.connection, reciever)
-		elif messageType == CONTROL_REMOVE_CHANNEL:
-			self.interface.unregister_channel(self.connection, reciever)
-		elif messageType == CONTROL_SET_CON_NAME:
-			return NotImplemented
-		elif messageType == CONTROL_SET_CON_URL:
-			return NotImplemented
-		elif messageType == CONTROL_ADD_RANGE:
-			return NotImplemented
-		elif messageType == CONTROL_REMOVE_RANGE:
-			return NotImplemented
-		elif messageType == CONTROL_ADD_POST_REMOVE:
-			return NotImplemented
-		elif messageType == CONTROL_CLEAR_POST_REMOVE:
-			return NotImplemented
-		else:
-			self.notify.debug("Recieved an invalid messageType: %d" % messageType)
-			return
+            return NotImplemented
+        elif messageType == CONTROL_SET_CHANNEL:
+            self.interface.register_channel(self.connection, reciever)
+        elif messageType == CONTROL_REMOVE_CHANNEL:
+            self.interface.unregister_channel(self.connection, reciever)
+        elif messageType == CONTROL_SET_CON_NAME:
+            return NotImplemented
+        elif messageType == CONTROL_SET_CON_URL:
+            return NotImplemented
+        elif messageType == CONTROL_ADD_RANGE:
+            return NotImplemented
+        elif messageType == CONTROL_REMOVE_RANGE:
+            return NotImplemented
+        elif messageType == CONTROL_ADD_POST_REMOVE:
+            return NotImplemented
+        elif messageType == CONTROL_CLEAR_POST_REMOVE:
+            return NotImplemented
+        else:
+            self.notify.debug("Recieved an invalid messageType: %d" % messageType)
+            return
     
     def handle_bad_channel(self, di):
         return NotImplemented
