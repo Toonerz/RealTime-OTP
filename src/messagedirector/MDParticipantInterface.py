@@ -13,17 +13,19 @@ class MDParticipantInterface:
                     if potentials == connection:
                         self.potentialParticipants.remove(connection)
                         return True
-		else:
+        else:
             return False
  
     def register_channel(self, connection, channel):
-        if authenicateChannel(connection, channel) == True:
-            return NotImplemented
+        if self.authenicateChannel(connection, channel) == False:
+            self.registeredParticipants[channel] = connection
+            print ("MDParticipantInterface: Registered channel: %d" % channel) # DEBUG!
         else:
             return NotImplemented
     
     def unregister_channel(self, connection, channel):
-        if authenicateChannel(connection, channel) == False:
-            return NotImplemented
+        if self.authenicateChannel(connection, channel) == True:
+            del self.registeredParticipants[channel]
+            print ("MDParticipantInterface: Un-Registered channel: %d" % channel) # DEBUG!
         else:
             return NotImplemented

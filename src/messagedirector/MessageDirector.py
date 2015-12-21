@@ -19,17 +19,21 @@ class MessageDirector(QueuedConnectionManager):
         self.cr = QueuedConnectionReader(self, 0)
         self.cw = ConnectionWriter(self, 0)
         self.interface = MDParticipantInterface()
+        self.open_connection()
     
     def unconfigure(self):
         for participant in self.interface:
             self.cr.removeConnection(participant)
         self.closeConnection(self.tcp_socket)
-        self.cl = self.cr = self.cw = self.interface = None
+        self.cl = self.cr = self.cw = self.tcp_socket = self.interface = None
     
     def open_connection(self):
         self.tcp_socket = self.openTCPServerRendezvous(self.serverport, 1000)
         if self.tcp_socket:
             self.cl.addConnection(self.tcp_socket)
+
+        taskMgr.add(self.task_listner_poll, "poll listener")
+        taskMgr.add(self.task_reader_poll, "poll reader")
     
     def task_listner_poll(self, taskname):
         if self.cl.newConnectionAvailable():
@@ -64,30 +68,32 @@ class MessageDirector(QueuedConnectionManager):
             self.handle_bad_channel(di)
     
     def handle_incoming(self, di):
-        sender = di.getUint64()
-        reciever = di.getUint64()
-        messageType = di.getUint16()
+        sender_channel = di.getUint64()
+        reciever_channel = di.getUint64()
+        message_type = di.getUint16()
+
+        print sender_channel, reciever_channel, message_type
         
-        if messageType == CONTROL_MESSAGE:
+        if message_type == CONTROL_MESSAGE:
             return NotImplemented
-        elif messageType == CONTROL_SET_CHANNEL:
-            self.interface.register_channel(self.connection, reciever)
-        elif messageType == CONTROL_REMOVE_CHANNEL:
-            self.interface.unregister_channel(self.connection, reciever)
-        elif messageType == CONTROL_SET_CON_NAME:
+        elif message_type == CONTROL_SET_CHANNEL:
+            self.interface.register_channel(self.connection, reciever_channel)
+        elif message_type == CONTROL_REMOVE_CHANNEL:
+            self.interface.unregister_channel(self.connection, reciever_channel)
+        elif message_type == CONTROL_SET_CON_NAME:
             return NotImplemented
-        elif messageType == CONTROL_SET_CON_URL:
+        elif message_type == CONTROL_SET_CON_URL:
             return NotImplemented
-        elif messageType == CONTROL_ADD_RANGE:
+        elif message_type == CONTROL_ADD_RANGE:
             return NotImplemented
-        elif messageType == CONTROL_REMOVE_RANGE:
+        elif message_type == CONTROL_REMOVE_RANGE:
             return NotImplemented
-        elif messageType == CONTROL_ADD_POST_REMOVE:
+        elif message_type == CONTROL_ADD_POST_REMOVE:
             return NotImplemented
-        elif messageType == CONTROL_CLEAR_POST_REMOVE:
+        elif message_type == CONTROL_CLEAR_POST_REMOVE:
             return NotImplemented
         else:
-            self.notify.debug("Recieved an invalid messageType: %d" % messageType)
+            self.notify.debug("Recieved an invalid message_type: %d" % message_type)
             return
     
     def handle_bad_channel(self, di):
