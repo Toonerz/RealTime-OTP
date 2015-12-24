@@ -57,29 +57,29 @@ class MessageDirector(QueuedConnectionManager):
         return Task.cont
     
     def handle_datagram(self, datagram):
-        self.connection = datagram.getConnection()
-        if not self.connection:
+        connection = datagram.getConnection()
+        if not connection:
             pass # TODO!
         
         di = PyDatagramIterator(datagram)
         if di.getUint8() == 1:
-            self.handle_incoming(di)
+            self.handle_incoming(di, connection, datagram)
         elif di.getUint8() == BAD_CHANNEL_ID:
             self.handle_bad_channel(di)
     
-    def handle_incoming(self, di):
-        sender_channel = di.getUint64()
+    def handle_incoming(self, di, connection, datagram):
         reciever_channel = di.getUint64()
+        sender_channel = di.getUint64()
         message_type = di.getUint16()
 
         print sender_channel, reciever_channel, message_type
         
         if message_type == CONTROL_MESSAGE:
-            return NotImplemented
+            self.route_message(di, datagram, reciever_channel, sender_channel)
         elif message_type == CONTROL_SET_CHANNEL:
-            self.interface.register_channel(self.connection, reciever_channel)
+            self.interface.register_channel(connection, reciever_channel)
         elif message_type == CONTROL_REMOVE_CHANNEL:
-            self.interface.unregister_channel(self.connection, reciever_channel)
+            self.interface.unregister_channel(connection, reciever_channel)
         elif message_type == CONTROL_SET_CON_NAME:
             return NotImplemented
         elif message_type == CONTROL_SET_CON_URL:
@@ -95,6 +95,15 @@ class MessageDirector(QueuedConnectionManager):
         else:
             self.notify.debug("Recieved an invalid message_type: %d" % message_type)
             return
+    
+    def route_message(self, di, datagram, reciever_channel, sender_channel): 
+        dg = PyDatagram()
+        dg.addUint64(reciever_channel)
+        dg.addUint64(sender_channel)
+        dg.addUint16(di.getUint16())
+        dg.appendData(di.getRemainingBytes())
+        self.cw.send(dg, self.interface.registeredParticipants[reciever_channel])
+        dg.clear()
     
     def handle_bad_channel(self, di):
         return NotImplemented
