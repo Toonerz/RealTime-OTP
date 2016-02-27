@@ -5,6 +5,7 @@ from direct.task.TaskManagerGlobal import *
 from direct.task.Task import Task
 from direct.distributed.PyDatagram import PyDatagram
 from direct.distributed.PyDatagramIterator import PyDatagramIterator
+from src.stateserver.DoInterestManager import DoInterestManager
 from src.util.types import *
 
 class StateServer(QueuedConnectionManager):
@@ -19,6 +20,7 @@ class StateServer(QueuedConnectionManager):
         self.cr = QueuedConnectionReader(self, 0)
         self.cw = ConnectionWriter(self, 0)
         self.our_channel = STATE_SERVER_CHANNEl
+        self.do_interest_manager = DoInterestManager()
         self.run_connection()
     
     def unconfigure(self):
@@ -67,3 +69,26 @@ class StateServer(QueuedConnectionManager):
         reciever_channel = di.getUint64()
         sender_channel = di.getUint64()
         msg_type = di.getUint16()
+
+        if msg_type == STATESERVER_OBJECT_GENERATE_WITH_REQUIRED:
+            location = (di.getUint32(), di.getUint32())
+            self.current_reciever = reciever_channel
+
+            if location == (0, 0):
+                print ("Tried to generate an object for an unknown location!")
+                return
+
+            self.do_interest_manager.handleGenerateWithRequired(self.current_reciever, location, di.getUint32())
+        if msg_type == STATESERVER_OBJECT_GENERATE_WITH_REQUIRED_OTHER:
+            doId = di.getUint32()
+            location = (di.getUint32(), di.getUint32())
+            self.current_reciever = reciever_channel
+
+            if location == (0, 0):
+                print ("Tried to generate an object for an unknown location!")
+                return
+
+            self.do_interest_manager.handleGenerateWithRequiredAndId(self.current_reciever, doId, location, di.getUint32())
+        else:
+            print ("Stateserver: Recieved a message that's unknown to the protocol, from %s" % str(sender_channel)) # debug error
+            return

@@ -19,6 +19,7 @@ class MessageDirector(QueuedConnectionManager):
         self.cr = QueuedConnectionReader(self, 0)
         self.cw = ConnectionWriter(self, 0)
         self.interface = MDParticipantInterface()
+        self.suspicious_connections = []
         self.open_connection()
     
     def unconfigure(self):
@@ -55,11 +56,20 @@ class MessageDirector(QueuedConnectionManager):
                 self.handle_datagram(datagram)
         
         return Task.cont
+
+    def dump_invalid_connection(self, connection):
+        if connection in self.interface.potentialParticipants:
+            self.cr.removeConnection(connection)
+            del self.interface.potentialParticipants[connection]
+        else: # This cannot virtually happen but its always good to have that extra barrier.
+            self.suspicious_connections.append(connection)
+
+        return
     
     def handle_datagram(self, datagram):
         connection = datagram.getConnection()
         if not connection:
-            pass # TODO!
+            self.dump_invalid_connection(connection)
         
         di = PyDatagramIterator(datagram)
         if di.getUint8() == 1:

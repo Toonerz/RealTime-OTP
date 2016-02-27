@@ -11,7 +11,7 @@ showbase = ShowBase()
 md = MessageDirector('127.0.0.1', 7101)
 md.configure()
 
-ca = ClientAgent('127.0.0.1', 7102, '127.0.0.1', 7101)
+ca = ClientAgent('127.0.0.1', 6667, '127.0.0.1', 7101)
 ca.configure()
 
 ss = StateServer('127.0.0.1', 7101)

@@ -101,7 +101,7 @@ class DoInterestManager:
         # TODO: i really don't think well need this but, i can find a use for it later.
         # Store this discovery!
         if distributedObj.doId in self.doIdByConnection:
-            if distributed.getOwnersView() != True:
+            if distributed.getOwnersView() == True:
                 distributed.setOwnersView(True)
             else:
                 pass
